@@ -5,3 +5,17 @@ DELETE http://localhost:3001/api/persons/4
 
 DELETE http://localhost:3001/api/persons/1
 
+
+
+### 
+
+POST http://localhost:3001/api/persons
+content-type: application/json
+
+{
+    "name": "Sobaka Sobaka",
+    "number": "999-99-99"
+  }
+
+
+

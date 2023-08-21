@@ -53,8 +53,32 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
+function getRandomId(max) {
+  return Math.floor(Math.random() * max);
+}
+
 app.post("/api/persons", (request, response) => {
-  const person = request.body;
+  const body = request.body;
+  const personExist = persons.find((person) => person.name === body.name);
+
+  if (!body.name || !body.number) {
+    return response.status(400).json({
+      error: "content is missing",
+    });
+  } else if (personExist) {
+    return response.status(409).json({
+      error: "name must be unique",
+    });
+  }
+
+  const person = {
+    id: getRandomId(100),
+    name: body.name,
+    number: body.number,
+  };
+  persons = persons.concat(person);
+
+  response.json(person);
 });
 
 const PORT = 3001;
