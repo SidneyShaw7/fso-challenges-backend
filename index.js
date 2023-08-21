@@ -1,7 +1,17 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 
+morgan.token("data-sent", (req) => {
+  return JSON.stringify(req.body);
+});
+
 app.use(express.json());
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] - :response-time ms :data-sent"
+  )
+);
 
 let persons = [
   {
@@ -43,7 +53,11 @@ app.get("/api/persons/:id", (request, response) => {
   const id = Number(request.params.id);
   const person = persons.find((person) => person.id === id);
 
-  person ? response.json(person) : response.status(404).end();
+  if (person) {
+    response.json(person);
+  } else {
+    response.status(404).end();
+  }
 });
 
 app.delete("/api/persons/:id", (request, response) => {
@@ -82,4 +96,6 @@ app.post("/api/persons", (request, response) => {
 });
 
 const PORT = 3001;
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`Server running on PORT${PORT}`);
+});
