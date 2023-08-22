@@ -1,11 +1,14 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const app = express();
 
 morgan.token("data-sent", (req) => {
   return JSON.stringify(req.body);
 });
 
+app.use(express.static("dist")); // show static content (minified version of the app)
+app.use(cors()); // allow requests from all origins
 app.use(express.json());
 app.use(
   morgan(
@@ -38,6 +41,10 @@ let persons = [
 
 const currentDate = new Date().toString();
 const amount = persons.length;
+
+app.get("/", (request, response) => {
+  response.send("<h1>checking get request. You see it? Successful!</h1>");
+});
 
 app.get("/api/persons", (request, response) => {
   response.json(persons);
@@ -95,7 +102,7 @@ app.post("/api/persons", (request, response) => {
   response.json(person);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on PORT${PORT}`);
 });
