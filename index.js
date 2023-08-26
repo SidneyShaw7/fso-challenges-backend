@@ -43,7 +43,6 @@ let persons = [
 ];
 
 const currentDate = new Date().toString();
-const amount = persons.length;
 
 app.get("/api/persons", (request, response, next) => {
   Person.find({})
@@ -53,27 +52,18 @@ app.get("/api/persons", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.get("/info", (request, response) => {
-  response.send(
-    `<p>Phonebook has info for ${amount} people</p><p>${currentDate}</p>`
-  );
+app.get("/info", (request, response, next) => {
+  Person.find({})
+    .then((persons) => {
+      const amount = persons.length;
+      response.send(
+        `<p>Phonebook has info for ${amount} people</p><p>${currentDate}</p>`
+      );
+    })
+    .catch((error) => next(error));
 });
 
-// app.get("/api/persons/:id", (request, response) => {
-//   const id = Number(request.params.id);
-//   const person = persons.find((person) => person.id === id);
-
-//   if (person) {
-//     response.json(person);
-//   } else {
-//     response.status(404).end();
-//   }
-// });
-
 app.delete("/api/persons/:id", (request, response, next) => {
-  // const id = Number(request.params.id);
-  // persons = persons.filter((person) => person.id !== id);
-  // response.status(204).end();
   Person.findByIdAndRemove(request.params.id)
     .then((result) => {
       response.status(204).end();
@@ -85,49 +75,22 @@ function getRandomId(max) {
   return Math.floor(Math.random() * max);
 }
 
-// app.post("/api/persons", (request, response) => {
-//   const body = request.body;
-//   const personExist = person.find((person) => person.name === body.name);
-
-//   if (!body.name || !body.number) {
-//     return response.status(400).json({
-//       error: "content is missing",
-//     });
-//   } else if (personExist) {
-//     return response.status(409).json({
-//       error: "name must be unique",
-//     });
-//   }
-
-//   const person = {
-//     id: getRandomId(100),
-//     name: body.name,
-//     number: body.number,
-//   };
-//   persons = persons.concat(person);
-
-//   response.json(person);
-// });
-
 app.put("/api/persons/:id", (request, response, next) => {
   const body = request.body;
-  const personExist = person.find((person) => person.name === body.name);
 
   const person = {
     name: body.name,
     number: body.number,
   };
 
-  if (personExist) {
-    Person.findByIdAndUpdate(request.params.id, person, { new: true })
-      .then((updatedPerson) => {
-        response.json(updatedPerson);
-      })
-      .catch((error) => next(error));
-  }
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then((updatedPerson) => {
+      response.json(updatedPerson);
+    })
+    .catch((error) => next(error));
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
 
   if (body === undefined) {
@@ -139,9 +102,12 @@ app.post("/api/persons", (request, response) => {
     number: body.number || false,
   });
 
-  person.save().then((savedPerson) => {
-    response.json(savedPerson);
-  });
+  person
+    .save()
+    .then((savedPerson) => {
+      response.json(savedPerson);
+    })
+    .catch((error) => next(error));
 });
 
 app.get("/api/persons/:id", (request, response, next) => {
@@ -161,6 +127,8 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
   }
 
   next(error);
