@@ -1,14 +1,15 @@
+/* eslint-disable no-undef */
 const mongoose = require("mongoose");
 
 mongoose.set("strictQuery", false);
 
-const url = process.env.MONGODB_URL;
+const url = process.env.MONGODB_URI;
 
 console.log("connecting to", url);
 
 mongoose
   .connect(url)
-  .then((result) => {
+  .then(() => {
     console.log("connected to MongoDB");
   })
   .catch((error) => {
@@ -29,8 +30,8 @@ const personSchema = new mongoose.Schema({
     validate: {
       validator: function (value) {
         return (
-          /^[0-9]{2}\-[0-9]{7}$/.test(value) ||
-          /^[0-9]{3}\-[0-9]{8}$/.test(value)
+          /^[0-9]{2}-[0-9]{7}$/.test(value) ||
+          /^[0-9]{3}-[0-9]{8}$/.test(value)
         );
       },
     },
